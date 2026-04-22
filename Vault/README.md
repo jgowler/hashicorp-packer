@@ -46,8 +46,8 @@ With the user account created it will need to be granted permissions to use the 
 1. Dashboard > `Access Control`
 2. Select `ACL policies`
 3. Select `Create a policy`
-4. Give the policy a name ("secrets-access" for example).
-5. In the `Rule` field enter the name of the policy with "/+/creds", e.g. `secrets-access/+/creds`.
+4. Give the policy a name ("azure-secrets" for example).
+5. In the `Rule` field enter the name of the policy with "/+/creds", e.g. `azure-secrets/+/creds`.
 6. In the `Capabilities` field you select the permissions for this policy. I selected `create, list, update, read`.
 7. Click `Create policy`.
 
@@ -59,7 +59,26 @@ Now the ACL policy needs to be applied ot the user account:
 1. Select the newly created user from `Authentication methods`.
 2. Select `Edit user`
 3. Expand `Tokens`
-4. Under ` Generated Token's Policies` type in the name of the new policy ("secrets-access") and click `Add`.
+4. Under ` Generated Token's Policies` type in the name of the new policy ("azure-secrets") and click `Add`.
 5. Click `Save`.
 
 Now that the user is created and has permissions to the Vault log out of the root account and log back into the Vault using the `userpass` method and the credentials for the new account.
+
+# 2. Store Azure information in the Vault.
+
+To store credentials in the Vault a `Secret engine` must be created:
+```
+"Secrets engines in Vault securely manage, store, and dynamically generate secrets, certificates, and encryption keys."
+```
+
+1. Dashboard > `Secrets`
+2. Select `+ Enable a Secret engine`
+3. As I am working with Azure I will select this from under `Cloud`.
+4. For the `Plugin registration type` I will be using the `Built-in plugin`:
+```
+Built-in plugin
+
+"Preregistered plugins shipped with Vault. The plugin version is tied to your Vault version and cannot be specified."
+```
+5. In `Path` select the ACL policy name created previously as the mount path.
+6. For testing, click `Enable engine`.

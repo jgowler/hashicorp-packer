@@ -40,7 +40,7 @@ Now that access is granted to the Vault the first thing I will do is create a us
 7. Select `Create user`
 8. Choose a username and password then click `Save`.
 
-## Grant the user permissions
+## Create ACL policy
 With the user account created it will need to be granted permissions to use the Vault to access secrets. This is done with the creation and assignement of ACL policies:
 
 1. Dashboard > `Access Control`
@@ -52,3 +52,14 @@ With the user account created it will need to be granted permissions to use the 
 7. Click `Create policy`.
 
 The policy will then be displayed in `HCL` format. You can store this in version control if required.
+
+## Grant the new user permissions to secrets
+Now the ACL policy needs to be applied ot the user account:
+
+1. Select the newly created user from `Authentication methods`.
+2. Select `Edit user`
+3. Expand `Tokens`
+4. Under ` Generated Token's Policies` type in the name of the new policy ("secrets-access") and click `Add`.
+5. Click `Save`.
+
+Now that the user is created and has permissions to the Vault log out of the root account and log back into the Vault using the `userpass` method and the credentials for the new account.

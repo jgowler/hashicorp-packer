@@ -28,3 +28,27 @@ Please securely distribute the keys below. When the Vault is re-sealed, restarte
 
 The next step will require you to use the keys from the previous step to log in. Once this has been done the `Sign in to Vault` screen will ask how you would like to sign in. For this I will select `Token` and use the initial root token.
 
+## Create a user
+Now that access is granted to the Vault the first thing I will do is create a user account to access instead of using the root token each time. This can be done with the following steps:
+
+1. From the Dashboard select `Access Control`.
+2. Select `Authentication Methods`
+3. `+ Enable a new method`
+4. Select `Userpass`
+5. Select `Enable method`
+6. Go back to `Authentication methods` and select the new entry `userpass\`
+7. Select `Create user`
+8. Choose a username and password then click `Save`.
+
+## Grant the user permissions
+With the user account created it will need to be granted permissions to use the Vault to access secrets. This is done with the creation and assignement of ACL policies:
+
+1. Dashboard > `Access Control`
+2. Select `ACL policies`
+3. Select `Create a policy`
+4. Give the policy a name ("secrets-access" for example).
+5. In the `Rule` field enter the name of the policy with "/+/creds", e.g. `secrets-access/+/creds`.
+6. In the `Capabilities` field you select the permissions for this policy. I selected `create, list, update, read`.
+7. Click `Create policy`.
+
+The policy will then be displayed in `HCL` format. You can store this in version control if required.

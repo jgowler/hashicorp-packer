@@ -82,3 +82,12 @@ Built-in plugin
 ```
 5. In `Path` select the ACL policy name created previously as the mount path.
 6. For testing, click `Enable engine`.
+7. You will then be presented with the `General settings` for this secrets engine. Change these as required, I will leave as is for testing purposes.
+8. In `Azure settings` you can set the following formation:
+```
+Subscription ID
+Tenant ID
+Client ID
+Client secret
+```
+`Environment` can also be set in `More options` but as I am using the Azure Public Cloud this does not need specifying. Once this information has been provided they will be stored in the Vault ready to be used.

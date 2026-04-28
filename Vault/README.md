@@ -97,7 +97,8 @@ GUI:
 1. Log into the GUI using the new user account
 2. From the top-right corner click the User button.
 3. Select Copy token.
-
+```
+```
 CLI:
 NOTE: Ensure 'VAULT_ADDR' is the address of vault, such as 'https://127.0.0.1:8200'. To set a new cert key pair see 'VaultCert.md'
 
@@ -133,3 +134,16 @@ To resolve this, either use an account which has authorisation to create tokens 
 7. Click `Create policy`.
 
 Then assign this policy to the user account the same way as earlier and they will then be authorised to create tokens.
+Once this authorisation issue is resolved log out of the Vault from CLI:
+```
+vault token revoke -self
+```
+Then sign back in:
+```
+vault login -method=userpass username=<USERNAME>
+```
+Then run the token creation again:
+```
+vault token create -policy=azure-secrets -ttl=10m
+```
+You will then see the token information on screen. I have select the TTL to 10 minutes for testing purposes.

@@ -54,6 +54,7 @@ With the user account created it will need to be granted permissions to use the 
 The policy will then be displayed in `HCL` format. You can store this in version control if required.
 
 ## Grant the new user permissions to secrets
+
 Now the ACL policy needs to be applied ot the user account:
 
 1. Select the newly created user from `Authentication methods`.
@@ -91,7 +92,44 @@ Built-in plugin
 To access the secrets in the secrets engine created we will need the new user's `token`. This can be done either by CLI or by GUI. For testing I will get the token from the GUI:
 
 ```
+GUI:
+
 1. Log into the GUI using the new user account
 2. From the top-right corner click the User button.
 3. Select Copy token.
+
+CLI:
+NOTE: Ensure 'VAULT_ADDR' is the address of vault, such as 'https://127.0.0.1:8200'. To set a new cert key pair see 'VaultCert.md'
+
+vault login -method=userpass username=<user create earlier>
+- Enter the password for the account and you should then be able to see the details of this account on screen.
 ```
+
+Next, create the token using the following command:
+```
+vault token create -policy=azure-secrets -ttl=10m
+```
+
+At this stage you will see the following error:
+
+```
+Error creating token: Error making API request.
+
+URL: POST https://127.0.0.1:8200/v1/auth/token/create
+Code: 403. Errors:
+
+* 1 error occurred:
+        * permission denied
+```
+
+To resolve this, either use an account which has authorisation to create tokens or grant the user account the permissions to do this:
+
+1. Dashboard > `Access Control`
+2. Select `ACL policies`
+3. Select `Create a policy`
+4. Give the policy a name ("token-creator" for example).
+5. In the `Rule` field enter the path seen in the error message (auth/token/create)
+6. In the `Capabilities` field `create, update`.
+7. Click `Create policy`.
+
+Then assign this policy to the user account the same way as earlier and they will then be authorised to create tokens.

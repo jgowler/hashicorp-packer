@@ -20,7 +20,7 @@ Then access the UI using the Vault IP address on port 8200. You will then be ask
 
 The Threshold is the minimum number of shares that are required to recover, so if you select 7 shares you may want a threshold of between 3 or 4, as an example.
 
-After the Vaukt has been initialised you will see this message:
+After the Vault has been initialised you will see this message:
 
 ```
 Please securely distribute the keys below. When the Vault is re-sealed, restarted, or stopped, you must provide at least 3 of these keys to unseal it again. Vault does not store the root key. Without at least 3 keys, your Vault will remain permanently sealed. 
@@ -47,13 +47,14 @@ With the user account created it will need to be granted permissions to use the 
 2. Select `ACL policies`
 3. Select `Create a policy`
 4. Give the policy a name ("azure-secrets" for example).
-5. In the `Rule` field enter the name of the policy with "/+/creds", e.g. `azure-secrets/+/creds`.
-6. In the `Capabilities` field you select the permissions for this policy. I selected `create, list, update, read`.
+5. In the `Rule` field enter the name of the policy with "*", e.g. `azure/*` (for testing purposes I will grant the user access to everything in this engine).
+6. In the `Capabilities` field you select the permissions for this policy. I selected `list, read`.
 7. Click `Create policy`.
 
 The policy will then be displayed in `HCL` format. You can store this in version control if required.
 
 ## Grant the new user permissions to secrets
+
 Now the ACL policy needs to be applied ot the user account:
 
 1. Select the newly created user from `Authentication methods`.
@@ -73,21 +74,76 @@ To store credentials in the Vault a `Secret engine` must be created:
 
 1. Dashboard > `Secrets`
 2. Select `+ Enable a Secret engine`
-3. As I am working with Azure I will select this from under `Cloud`.
+3. Select `KV`.
 4. For the `Plugin registration type` I will be using the `Built-in plugin`:
 ```
 Built-in plugin
 
 "Preregistered plugins shipped with Vault. The plugin version is tied to your Vault version and cannot be specified."
 ```
-5. In `Path` select the ACL policy name created previously as the mount path.
+5. In `Path` this can be left as `kv`.
 6. For testing, click `Enable engine`.
-7. You will then be presented with the `General settings` for this secrets engine. Change these as required, I will leave as is for testing purposes.
-8. In `Azure settings` you can set the following formation:
+7. You will then be presented with an empty `Secrets` screen.
+8. Select `+ Create secret`.
+9. In the `Path for this secret` field select `azure`.
+10. Add in the Key Value pairs in the `Secret data` fields below, such as client_id and its value.
+11. Click Save when completed.
+
+To access the secrets in the secrets engine created we will need the new user's `token`. This can be done either by CLI or by GUI. For testing I will get the token from the GUI:
+
 ```
-Subscription ID
-Tenant ID
-Client ID
-Client secret
+GUI:
+
+1. Log into the GUI using the new user account
+2. From the top-right corner click the User button.
+3. Select Copy token.
 ```
-`Environment` can also be set in `More options` but as I am using the Azure Public Cloud this does not need specifying. Once this information has been provided they will be stored in the Vault ready to be used.
+```
+CLI:
+NOTE: Ensure 'VAULT_ADDR' is the address of vault, such as 'https://127.0.0.1:8200'. To set a new cert key pair see 'VaultCert.md'
+
+vault login -method=userpass username=<user create earlier>
+- Enter the password for the account and you should then be able to see the details of this account on screen.
+```
+
+Next, create the token using the following command:
+```
+vault token create -policy=azure-secrets -ttl=10m
+```
+
+At this stage you will see the following error:
+
+```
+Error creating token: Error making API request.
+
+URL: POST https://127.0.0.1:8200/v1/auth/token/create
+Code: 403. Errors:
+
+* 1 error occurred:
+        * permission denied
+```
+
+To resolve this, either use an account which has authorisation to create tokens or grant the user account the permissions to do this:
+
+1. Dashboard > `Access Control`
+2. Select `ACL policies`
+3. Select `Create a policy`
+4. Give the policy a name ("token-creator" for example).
+5. In the `Rule` field enter the path seen in the error message (auth/token/create)
+6. In the `Capabilities` field `create, update`.
+7. Click `Create policy`.
+
+Then assign this policy to the user account the same way as earlier and they will then be authorised to create tokens.
+Once this authorisation issue is resolved log out of the Vault from CLI:
+```
+vault token revoke -self
+```
+Then sign back in:
+```
+vault login -method=userpass username=<USERNAME>
+```
+Then run the token creation again:
+```
+vault token create -policy=azure-secrets -ttl=10m
+```
+You will then see the token information on screen. I have select the TTL to 10 minutes for testing purposes.

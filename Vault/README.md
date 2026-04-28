@@ -146,4 +146,13 @@ Then run the token creation again:
 ```
 vault token create -policy=azure-secrets -ttl=10m
 ```
-You will then see the token information on screen. I have select the TTL to 10 minutes for testing purposes.
+The token information will be presented on screen. You can test accessing the secret using the token using the following:
+
+```
+export VAULT_TOKEN=<insert token here>
+vault kv get kv/azure
+```
+
+You will then see the 
+
+I have select the TTL to 10 minutes for testing purposes. This token can now be used by Packer to access the Key-Value pairs in `kv/azure` to authenticate to Azure using a service principal.

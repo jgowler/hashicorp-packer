@@ -71,7 +71,7 @@ sudo chmod 600 /opt/vault/tls/tls.key
 sudo chmod 644 /opt/vault/tls/tls.crt
 ```
 
-## 5. Configure Vault HTTPS Listener
+## 5. Check the Vault HTTPS Listener
 
 ```
 /etc/vault.d/vault.hcl

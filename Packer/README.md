@@ -10,17 +10,20 @@ The above link is the official documentation for installing Hashicorp Packer.
 
 ## Create the Variables file
 
-The variables used will be stored in their own file as to segregate them reliably from the main files which may be uploaded to version control. The file is `variables.pkrvars.hcl`.
-
-In the file variables will be added in to get the information from Vault to authenticate to Azure. they will look similar to this:
+The variables file will be used to store information to be injected into the main file during the build, such as the resource group and location:
 ```
-variable "client_id" {
+variable "resource_group" {
     type = string
-    default = vault("kv/azure", "client_id")
-    sensitive = true
+    default = "hashicorp-packer"
+}
+variable "location" {
+    type = string
+    default = "UK South"
 }
 ```
-Here, the variable will use the `vault()` method to get the `client_id` from the `kv/azure` secrets engine. All of the secret information stored previously in Vault will be accessed in the same way. I will be renaming `variables.pkrvars.hcl` to `variables.auto.pkrvars.hcl` to ensure Packer will load these values automatically.
+## Create the Local file
+
+The function `vault()` will be used to get the `client_id` from the `kv/azure` secrets engine. All of the secret information stored previously in Vault will be accessed in the same way.
 
 NOTE: The `VAULT_ADDR` and `VAULT_TOKEN` can not be injected using the variables file as these are required for Packer to connect. Use the following to to set these (Linux):
 
@@ -70,8 +73,8 @@ source "azure-arm" "image" {
   managed_image_name                = var.image_name
 
   image_publisher = "Canonical"
-  image_offer     = "0001-com-ubuntu-server-focal"
-  image_sku       = "20_04-lts"
+  image_offer     = "0001-com-ubuntu-server-focal-daily"
+  image_sku       = "20_04-daily-lts-gen2"
   image_version   = "latest"
 }
 ```
@@ -128,3 +131,27 @@ First Packer needs to initialise in the folder containing the files vcreate prev
 Packer will then download the required plugins.
 Next, validate the build:
 `packer validate .`
+
+Once validated the `VAULT_ADDR` and `VAULT_TOKEN` environment variables will be required:
+```
+export VAULT_ADDR=https://<vault ip address>:8200
+export VAULT_TOKEN=<insert token here>
+```
+Last thing to do here is build:
+`packer build .`
+
+Packer will now build the resources needed to create the image as specified.
+
+# Observations:
+
+- The defaukt machine size was not available at the time of building. `var.vm_size` was used to specify one available.
+- `build_resource_group_name` was used as I wanted to use a resource group that already existsed.
+- Because `build_resource_group_name` was used I needed to remove the `location` values from `Sources`.
+- The progress of installing Python was viewable from the console, no need to assume if it is working or not.
+- After the build was successful more values were set in the variables file and variables used in the sources file. This will help smplify making changes and using this as a template for future builds.
+- Using AZ CLI to query avilable images was helpful as `--location` helped to check what was avilable in my location.
+- Once the `VAULT_ADDR` and `VAULT_TOKEN` environment variables were set the `locals` file helped with accessing Vault using the `vault()` function.
+- The hardest part was ensuring Packer could access the secrets in Vault. It is always best to double check if the secrets engine is using `v1` or `v2`
+- Always double check sensitive information is protected when injected using `variables` or `locals` by adding `sensitive = true` to the block.
+- I experienced issues with TLS when trying to connect using HTTPS. The attached guide to set a new key pair was helpful to resolve this (Vault\VaultCert.md).
+- Because `vault()` was used no sensitive data was included. Access to the Vault for Packer was allowed using environment variables on the machine using `export`.

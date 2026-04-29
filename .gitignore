@@ -14,3 +14,7 @@ crash.log
 
 # For built boxes
 *.box
+
+# Packer
+*.auto.pkr.hcl
+manifest.json

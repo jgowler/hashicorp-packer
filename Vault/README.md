@@ -47,9 +47,17 @@ With the user account created it will need to be granted permissions to use the 
 2. Select `ACL policies`
 3. Select `Create a policy`
 4. Give the policy a name ("azure-secrets" for example).
-5. In the `Rule` field enter the name of the policy with "*", e.g. `azure/*` (for testing purposes I will grant the user access to everything in this engine).
-6. In the `Capabilities` field you select the permissions for this policy. I selected `list, read`.
-7. Click `Create policy`.
+5. In the `Policy rules` field click `Code editor`and paste the following:
+```
+path "kv/metadata/azure" {
+  capabilities = ["read", "list"]
+}
+
+path "kv/data/azure" {
+  capabilities = ["read"]
+}
+```
+6. Click `Create policy`.
 
 The policy will then be displayed in `HCL` format. You can store this in version control if required.
 
@@ -146,4 +154,12 @@ Then run the token creation again:
 ```
 vault token create -policy=azure-secrets -ttl=10m
 ```
-You will then see the token information on screen. I have select the TTL to 10 minutes for testing purposes.
+The token information will be presented on screen. You can test accessing the secret using the token using the following:
+
+```
+export VAULT_TOKEN=<insert token here>
+vault kv get kv/azure
+```
+I have select the TTL to 10 minutes for testing purposes. This token can now be used by Packer to access the Key-Value pairs in `kv/azure` to authenticate to Azure using a service principal.
+
+Next, on to Packer.

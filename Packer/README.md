@@ -87,14 +87,14 @@ build {
   sources = [
     "source.azure-arm.image"
   ]
-  provisioner "install-python" {
+  provisioner "shell" {
     inline = [
         "sudo apt update",
         "sudo apt upgrade -y",
         "sudo apt install python3"
         ]
   }
-  post-processor "output manifest" {
+  post-processor "manifest" {
         output = "manifest.json"
         }
 }
@@ -113,14 +113,18 @@ source "azure-arm" "image" {
 ...
 
 ```
-The `provisioner` block will tell Packer to run some code during the process to update the package index, upgrade the installed packages, then install python3.
+The `provisioner` block will tell Packer to run some code using `shell` during the process to update the package index, upgrade the installed packages, then install python3.
 
 `inline` is used here but a `file` could also be transfered over to the image. More information on this can be found here:
 https://developer.hashicorp.com/packer/docs/provisioners
 
 
-A `Post-Processor` vlock will be added to output a `manifest.json` file used to describe the image created. This can be used for version tracking, as an exmaple.
+A `Post-Processor` vlock will be added to output a `manifest.json` file used to describe the image created. This can be used for version tracking, as an example.
 
-```
+# 5. Initialise, Validate, Build.
 
-```
+First Packer needs to initialise in the folder containing the files vcreate previously:
+`packer init .`
+Packer will then download the required plugins.
+Next, validate the build:
+`packer validate .`

@@ -6,6 +6,12 @@ source "azure-arm" "image" {
   os_type  = var.os_type
   vm_size = var.vm_size
 
+  communicator = "winrm"
+  winrm_username = "Packer"
+  winrm_timeout = "10m"
+  winrm_use_ssl = true
+  winrm_insecure = true
+
   build_resource_group_name = var.resource_group
   managed_image_resource_group_name = var.resource_group
   managed_image_name                = var.image_name

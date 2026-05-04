@@ -4,10 +4,13 @@ build {
     "source.azure-arm.image"
   ]
   provisioner "powershell" {
-    script = var.Install-WindowsUpdate
+    script = var.USOClient-Update
   }
   provisioner "powershell" {
-    script = var.Install-IIS
+    script = var.Disable-WindowsSearch
+  }
+  provisioner "powershell" {
+    script = var.Install-FSLogix
   }
   post-processor "manifest" {
         output = "manifest.json"

@@ -1,29 +1,38 @@
 on:
   pull_request:
     paths:
-      - "Packer-Linux"
+      - "Packer-Linux/**"
+
 jobs:
-  Validate Build:
+  validate-build:
     runs-on: docker
+
     steps:
       - name: Checkout repo
-        uses: actions/checkoutv4
+        uses: actions/checkout@v4
 
-      - name: Download curl, wget
+      - name: Install curl and wget
         run: |
-          sudo apt update && sudo apt install curl wget
+          sudo apt update && sudo apt install -y curl wget
           wget --version
           curl --version
 
-      - name: Install Hashicorp Packer
+      - name: Install HashiCorp Packer
         run: |
-          # Packer
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-          sudo apt-get update && sudo apt-get install packer
+          set -e
+
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+
+          echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+          https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+          sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+          sudo apt-get update
+          sudo apt-get install -y packer
+
           packer --version
-        
-      - name: Packer: Validate
+
+      - name: Packer validate
         run: |
-          packer init .
-          packer validate .
+          packer init Packer-Linux/
+          packer validate Packer-Linux/
